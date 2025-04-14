@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""
+Logit - A wrapper script for the enhanced logger.
+
+This script provides a simple command-line interface to the enhanced logger.
+It creates a new log entry and generates a link for Perplexity.
+"""
+
+import os
+import sys
+import datetime
+
+# Add the project root to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from code.utils.enhanced_logger import EnhancedLogger
+
+def main():
+    """Main function for the logit script."""
+    # Create a logger instance
+    logger = EnhancedLogger()
+    
+    # Add session goals
+    logger.add_session_goal("Document Cursor interactions")
+    logger.add_session_goal("Generate Perplexity link")
+    
+    # Log the start of the session
+    logger.log_action("Started new logging session")
+    
+    # End the session
+    logger.end_session()
+    
+    # Print the log file path
+    print(f"\nCurrent log file: {logger.log_file}")
+    
+    # Print recent logs
+    print("\n=== Recent Logs ===")
+    
+    # Get the date directory
+    date_dir = logger.session_dir
+    
+    # Get all log files in the date directory
+    log_files = [f for f in os.listdir(date_dir) if f.startswith("session_") and f.endswith(".log")]
+    
+    # Sort by creation time (newest first)
+    log_files.sort(key=lambda x: os.path.getctime(os.path.join(date_dir, x)), reverse=True)
+    
+    # Print the most recent logs (up to 5)
+    for log_file in log_files[:5]:
+        print(f"\n=== Previous session: {log_file} ===")
+        
+        # Read the log file
+        with open(os.path.join(date_dir, log_file), 'r') as f:
+            log_content = f.read()
+        
+        # Print the log content
+        print(log_content)
+        print("=" * 50)
+    
+    # Print the Perplexity link
+    print("\n=== Perplexity Link ===")
+    perplexity_link = logger.generate_perplexity_link()
+    print(perplexity_link)
+    
+    # Print instructions for viewing the full log
+    print(f"\nTo view the full log, use: cat {logger.log_file}")
+
+if __name__ == "__main__":
+    main() 

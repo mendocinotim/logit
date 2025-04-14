@@ -1,0 +1,9 @@
+# Pinned versions from successful Warp AI installation
+nemo_toolkit[asr]==1.20.0
+torch==2.2.0
+torchaudio==2.2.0
+numpy==1.23.5
+pynini==2.1.5 
+youtokentome==1.0.6
+pydub==0.25.1
+soundfile==0.12.1
