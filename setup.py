@@ -10,7 +10,10 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'logit=code.utils.logit:main',
+            'logit=src.logit:main',
         ],
+    },
+    package_data={
+        'logit': ['configs/*.json', 'js/*.js'],
     },
 ) 

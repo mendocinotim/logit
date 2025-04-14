@@ -25,28 +25,39 @@ import time
 import webbrowser
 
 # Import the cursor logger for consistency
-from cursor_logger import cursor_logger
+from .cursor_logger import cursor_logger
 
 class InteractionLogger:
     """Logger for Cursor-user interactions with enhanced features"""
     
     def __init__(self):
         """Initialize the interaction logger."""
-        self.log_dir = Path("logs/cursor")
-        self.log_dir.mkdir(parents=True, exist_ok=True)
+        # Set up base directory in user's home
+        self.base_dir = Path(os.path.expanduser('~')) / '.logit'
+        self.log_dir = self.base_dir / 'logs' / 'cursor'
+        self.archive_dir = self.base_dir / 'archive'
+        self.backup_dir = self.base_dir / 'backups'
+        
+        # Create necessary directories
+        for directory in [self.log_dir, self.archive_dir, self.backup_dir]:
+            directory.mkdir(parents=True, exist_ok=True)
+            
         self.daily_dir = self.log_dir / datetime.now().strftime('%Y%m%d')
         self.daily_dir.mkdir(exist_ok=True)
+        
         self.session_id = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.project_name = os.path.basename(os.getcwd())
         self.date = datetime.now().strftime('%Y-%m-%d')
         self.conversation = []
         self.session_goals = []
+        
+        # Set up logging
         self.logger = logging.getLogger('interaction_logger')
         self.logger.setLevel(logging.INFO)
         
         # Set up file handler
-        log_file = self.daily_dir / f"cursor_{self.session_id}.log"
-        handler = logging.FileHandler(log_file)
+        self.log_file = self.daily_dir / f"cursor_{self.session_id}.log"
+        handler = logging.FileHandler(self.log_file)
         handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
         self.logger.addHandler(handler)
         
@@ -77,14 +88,9 @@ class InteractionLogger:
         self.shell = os.environ.get('SHELL', '/bin/sh')
         self.shell_name = os.path.basename(self.shell)
         
-        # Set up logging directories
+        # Set up topics directory
         self.topics_dir = self.log_dir / 'topics'
-        
-        for directory in [self.log_dir, self.topics_dir]:
-            directory.mkdir(exist_ok=True)
-        
-        # Set up log file
-        self.log_file = log_file
+        self.topics_dir.mkdir(exist_ok=True)
         
         # Configure logging
         logging.basicConfig(

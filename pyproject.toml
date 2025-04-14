@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logit"
+version = "0.1.0"
+description = "A comprehensive logging tool for tracking cursor interactions and managing conversation context"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "markdown>=3.3.0",
+    "pandas>=1.3.0",
+]
+
+[project.scripts]
+logit = "src.logit:main"
+
+[tool.setuptools]
+packages = ["src"] 

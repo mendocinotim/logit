@@ -7,7 +7,8 @@ from datetime import datetime
 def setup_cursor_logging():
     """Configure logging for Cursor operations"""
     # Create logs directory if it doesn't exist
-    log_dir = Path("/Volumes/AI_ETS_2TB/EverythingSwing/logs/cursor")
+    base_dir = Path(os.path.expanduser('~')) / '.logit'
+    log_dir = base_dir / 'logs' / 'cursor'
     log_dir.mkdir(parents=True, exist_ok=True)
     
     # Create a log file with timestamp

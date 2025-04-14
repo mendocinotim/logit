@@ -8,7 +8,7 @@ import json
 import time
 from pathlib import Path
 import logging
-from code.utils.interaction_logger import InteractionLogger
+from .interaction_logger import InteractionLogger
 
 class LogitLogger:
     def __init__(self):
@@ -18,7 +18,7 @@ class LogitLogger:
         self.command_count = 0
         
         # Initialize daily directory
-        self.logs_dir = Path('logs')
+        self.logs_dir = Path(os.path.expanduser('~')) / '.logit' / 'logs'
         self.daily_dir = self.logs_dir / datetime.now().strftime('%Y%m%d')
         self.daily_dir.mkdir(parents=True, exist_ok=True)
         
@@ -138,36 +138,31 @@ class LogitLogger:
         
     def show_recent_logs(self):
         """Show recent logs"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         logs = il.get_recent_logs()
         print(logs)
         
     def show_today_logs(self):
         """Show today's logs"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         logs = il.get_recent_logs(1)  # Get just today's logs
         print(logs)
         
     def show_yesterday_logs(self):
         """Show yesterday's logs"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         # This is a placeholder - would need to be implemented properly
         print("Yesterday's logs functionality not yet implemented")
         
     def show_last_n_hours(self, hours):
         """Show logs from the last N hours"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         # This is a placeholder - would need to be implemented properly
         print(f"Logs from the last {hours} hours functionality not yet implemented")
         
     def export_logs(self, format):
         """Export logs in the specified format"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         if format == 'html':
             output_file = il.export_to_html()
             if output_file:
@@ -184,17 +179,15 @@ class LogitLogger:
                 
     def set_topic(self, topic):
         """Set the current topic"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         il.start_topic_tracking(topic)
         print(f"Topic set to: {topic}")
         
     def list_topics(self):
         """List all available topics"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
-        topics_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs', 'cursor', 'topics')
-        if os.path.exists(topics_dir):
+        il = InteractionLogger()
+        topics_dir = self.logs_dir / 'topics'
+        if topics_dir.exists():
             topics = [f.replace('.json', '') for f in os.listdir(topics_dir) if f.endswith('.json')]
             if topics:
                 print("Available topics:")
@@ -207,8 +200,7 @@ class LogitLogger:
             
     def set_summary(self, summary):
         """Set a summary for the current topic"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         if il.current_topic:
             topic_data = {
                 'title': il.current_topic,
@@ -224,8 +216,7 @@ class LogitLogger:
             
     def set_goals(self, goals):
         """Set goals for the current topic"""
-        from interaction_logger import InteractionLogger as IL
-        il = IL()
+        il = InteractionLogger()
         if il.current_topic:
             topic_data = {
                 'title': il.current_topic,
@@ -676,49 +667,16 @@ def show_help(format='text'):
         print(help_content)
 
 def main():
-    parser = argparse.ArgumentParser(description='Cursor interaction logging tool')
-    
-    # Main commands
-    command_group = parser.add_mutually_exclusive_group()
-    command_group.add_argument('-c', '--context', nargs='?', const='all', 
-                             help='Show context with recent history. Optionally specify a topic.')
-    command_group.add_argument('-r', '--recent', type=int, default=24,
-                             help='Show logs from the last N hours (default: 24)')
-    command_group.add_argument('-t', '--today', action='store_true',
-                             help='Show today\'s logs')
-    command_group.add_argument('-y', '--yesterday', action='store_true',
-                             help='Show yesterday\'s logs')
-    command_group.add_argument('-s', '--summary', action='store_true',
-                             help='Show topic summaries')
-    
-    # Export options
-    export_group = parser.add_mutually_exclusive_group()
-    export_group.add_argument('--export', choices=['html', 'json', 'text'],
-                            help='Export logs in specified format')
-    export_group.add_argument('-f', '--help-format', choices=['html', 'json', 'text'],
-                            help='Show help in specified format')
-    
-    # Topic management
-    parser.add_argument('--topics', nargs='+',
-                       help='Set topics for current session')
-    parser.add_argument('--list-topics', action='store_true',
-                       help='List all topics')
-    
-    # Goals and summaries
-    parser.add_argument('--goals', nargs='+',
-                       help='Set goals for current session')
-    parser.add_argument('--set-summary', nargs='+',
-                       help='Set summary for current session')
-    
+    parser = create_parser()
     args = parser.parse_args()
     
-    # Initialize logger
-    logger = InteractionLogger()
-    
     try:
+        # Initialize logger
+        logger = InteractionLogger()
+        
         if args.help_format:
             show_help(args.help_format)
-            return
+            return 0
             
         if args.context:
             if args.export:
@@ -738,31 +696,31 @@ def main():
             else:
                 show_today_logs()
                 
-    elif args.yesterday:
+        elif args.yesterday:
             if args.export:
                 export_yesterday_logs(args.export)
             else:
                 show_yesterday_logs()
                 
-    elif args.summary:
+        elif args.summary:
             if args.export:
                 export_summary(args.export)
             else:
                 show_summary()
                 
-    elif args.topics:
+        elif args.topics:
             set_topics(args.topics)
             
         elif args.list_topics:
             list_topics()
             
-    elif args.goals:
+        elif args.goals:
             set_goals(args.goals)
             
         elif args.set_summary:
             set_summary(args.set_summary)
             
-    else:
+        else:
             parser.print_help()
             
     except Exception as e:
@@ -772,4 +730,4 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    main() 
+    sys.exit(main()) 
